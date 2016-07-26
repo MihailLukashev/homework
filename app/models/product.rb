@@ -6,7 +6,21 @@ class Product < ActiveRecord::Base
       with: %r{\.(gif|jpg|png)\Z}i,
       message: 'URL should be GIF, JPG, PNG'
   }
+  has_many :line_items
+  before_destroy :ensure_not_referenced_by_any_line_item
+
   def self.latest
     Product.order(:updated_at).last
+  end
+
+  private
+
+  def ensure_not_referenced_by_any_line_item
+    if line_items.empty?
+      return true
+    else
+      errors.add(:base, 'Products already exist')
+      return false
+    end
   end
 end
